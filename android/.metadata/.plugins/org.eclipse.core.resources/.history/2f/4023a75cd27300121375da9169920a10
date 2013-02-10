@@ -1,0 +1,222 @@
+package com.example.together;
+
+import java.util.List;
+
+import android.app.Activity;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
+import android.hardware.GeomagneticField;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.location.Location;
+import android.location.LocationManager;
+import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
+import android.widget.LinearLayout;
+import android.widget.Toast;
+
+public class CompassActivity extends Activity {
+
+	private static SensorManager mySensorManager;
+	private boolean sersorrunning;
+	private CompassView myCompassView;
+	private ImageView arrowView;
+
+	/** Called when the activity is first created. */
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_compass);
+
+		myCompassView = (CompassView)findViewById(R.id.mycompassview);
+//		arrowView = new ImageView(getApplicationContext());
+//		arrowView.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+//		arrowView.setImageDrawable((getResources().getDrawable(R.drawable.arrowblue)));
+//		LinearLayout ly = (LinearLayout) findViewById(R.id.mainCompassLayout);
+//		ly.addView(arrowView);
+
+		mySensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+		List<Sensor> mySensors = mySensorManager.getSensorList(Sensor.TYPE_ORIENTATION);
+
+		if(mySensors.size() > 0){
+			mySensorManager.registerListener(mySensorEventListener, mySensors.get(0), SensorManager.SENSOR_DELAY_NORMAL);
+			sersorrunning = true;
+			Toast.makeText(this, "Start ORIENTATION Sensor", Toast.LENGTH_LONG).show();
+
+		}
+		else{
+			Toast.makeText(this, "No ORIENTATION Sensor", Toast.LENGTH_LONG).show();
+			sersorrunning = false;
+			finish();
+		}
+	}
+
+	private SensorEventListener mySensorEventListener = new SensorEventListener(){
+
+		@Override
+		public void onAccuracyChanged(Sensor sensor, int accuracy) {
+			// TODO Auto-generated method stub
+
+		}
+
+//		public void onSensorChanged( SensorEvent event ) {
+//			Location locationObj = new Location(LocationManager.GPS_PROVIDER);
+//	        Double latOrg = 41.381752;
+//	        Double lonOrg = 2.14096;
+//	        locationObj.setLatitude(latOrg);
+//	        locationObj.setLongitude(lonOrg);
+//	        
+//	        Location destinationObj = new Location(LocationManager.GPS_PROVIDER);
+//	        Double latitude = 41.38323;
+//	        Double longitude = 2.140971;
+//	        destinationObj.setLatitude(latitude);
+//	        destinationObj.setLongitude(longitude);
+//	        
+//            // If we don't have a Location, we break out
+//            if ( locationObj == null ) return;
+//
+//            float azimuth = event.values[0];
+//                            float baseAzimuth = azimuth;
+//
+//            GeomagneticField geoField = new GeomagneticField( Double
+//                    .valueOf( locationObj.getLatitude() ).floatValue(), Double
+//                    .valueOf( locationObj.getLongitude() ).floatValue(),
+//                    Double.valueOf( locationObj.getAltitude() ).floatValue(),
+//                    System.currentTimeMillis() );
+//            azimuth += geoField.getDeclination(); // converts magnetic north into true north
+//
+//            //Correct the azimuth
+//            azimuth = azimuth % 360;
+//
+//            //This is where we choose to point it
+//            float direction = azimuth + locationObj.bearingTo( destinationObj );
+//            rotateImageView( arrowView, R.drawable.arrowsmall, direction );
+//
+//            //Set the field
+////            if( baseAzimuth > 0 && baseAzimuth < 45 ) fieldBearing.setText("S");
+////            else if( baseAzimuth >= 45 && baseAzimuth < 90 ) fieldBearing.setText("SW");
+////            else if( baseAzimuth > 0 && baseAzimuth < 135 ) fieldBearing.setText("W");
+////            else if( baseAzimuth > 0 && baseAzimuth < 180 ) fieldBearing.setText("NW");
+////            else if( baseAzimuth > 0 && baseAzimuth < 225 ) fieldBearing.setText("N");
+////            else if( baseAzimuth > 0 && baseAzimuth < 270 ) fieldBearing.setText("NE");
+////            else if( baseAzimuth > 0 && baseAzimuth < 315 ) fieldBearing.setText("E");
+////            else if( baseAzimuth > 0 && baseAzimuth < 360 ) fieldBearing.setText("SE");
+////            else fieldBearing.setText("?"); 
+//
+//        }
+		@Override
+		public void onSensorChanged(SensorEvent event) {
+			Location locationObj = new Location(LocationManager.GPS_PROVIDER);
+	        Double latOrg = 41.381752;
+	        Double lonOrg = 2.14096;
+	        locationObj.setLatitude(latOrg);
+	        locationObj.setLongitude(lonOrg);
+	        
+	        Location destinationObj = new Location(LocationManager.GPS_PROVIDER);
+	        Double latitude = 41.38323;
+	        Double longitude = 2.140971;
+	        destinationObj.setLatitude(latitude);
+	        destinationObj.setLongitude(longitude);
+	        
+            // If we don't have a Location, we break out
+            if ( locationObj == null ) return;
+
+            float azimuth = event.values[0];
+                            float baseAzimuth = azimuth;
+
+            GeomagneticField geoField = new GeomagneticField( Double
+                    .valueOf( locationObj.getLatitude() ).floatValue(), Double
+                    .valueOf( locationObj.getLongitude() ).floatValue(),
+                    Double.valueOf( locationObj.getAltitude() ).floatValue(),
+                    System.currentTimeMillis() );
+            azimuth += geoField.getDeclination(); // converts magnetic north into true north
+
+            //Correct the azimuth
+            azimuth = azimuth % 360;
+
+            //This is where we choose to point it
+            float direction = azimuth + locationObj.bearingTo( destinationObj );
+		 myCompassView.updateDirection((float)event.values[0]);
+		}
+
+	};
+	
+	private void rotateImageView( ImageView imageView, int drawable, float rotate ) {
+
+	    // Decode the drawable into a bitmap
+	    Bitmap bitmapOrg = BitmapFactory.decodeResource( getResources(),
+	            drawable );
+
+	    // Get the width/height of the drawable
+	    DisplayMetrics dm = new DisplayMetrics(); getWindowManager().getDefaultDisplay().getMetrics(dm);
+	    int width = bitmapOrg.getWidth(), height = bitmapOrg.getHeight();
+
+	    // Initialize a new Matrix
+	    Matrix matrix = new Matrix();
+
+	    // Decide on how much to rotate
+	    rotate = rotate % 360;
+
+	    // Actually rotate the image
+	    matrix.postRotate( rotate, width, height );
+
+	    // recreate the new Bitmap via a couple conditions
+	    Bitmap rotatedBitmap = Bitmap.createBitmap( bitmapOrg, 0, 0, width, height, matrix, true );
+	    //BitmapDrawable bmd = new BitmapDrawable( rotatedBitmap );
+
+	    //imageView.setImageBitmap( rotatedBitmap );
+	    imageView.setImageDrawable(new BitmapDrawable(getResources(), rotatedBitmap));
+	    imageView.setScaleType( ScaleType.CENTER );
+	}
+
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+
+		if(sersorrunning){
+			mySensorManager.unregisterListener(mySensorEventListener);
+		}
+	}
+
+	protected float getTarjet(SensorEvent event) {
+		float azimuth = event.values[0];// get azimuth from the orientation sensor (it's quite simple)
+		//41.381789, 2.141008
+		
+        //2 points in north direction: origen: 41.381752,2.14096  dest: 41.38323,2.140971  
+//		Location currentLoc = null; // get location from GPS or network
+		//test
+		Location currentLoc = new Location(LocationManager.GPS_PROVIDER);
+        Double latOrg = 41.381752;
+        Double lonOrg = 2.14096;
+        currentLoc.setLatitude(latOrg);
+        currentLoc.setLongitude(lonOrg);
+        
+		// convert radians to degrees
+		azimuth = azimuth * 180 / (float) Math.PI;
+		GeomagneticField geoField = new GeomagneticField(
+		             Double.valueOf(currentLoc.getLatitude()).floatValue(),
+		             Double.valueOf(currentLoc.getLongitude()).floatValue(),
+		             Double.valueOf(currentLoc.getAltitude()).floatValue(),
+		             System.currentTimeMillis());
+		Location locTest = new Location(LocationManager.GPS_PROVIDER);
+        Double latitude = 41.38323;
+        Double longitude = 2.140971;
+        locTest.setLatitude(latitude);
+        locTest.setLongitude(longitude);
+		
+		azimuth += geoField.getDeclination(); // converts magnetic north into true north
+		float bearing = currentLoc.bearingTo(locTest); // (it's already in degrees)
+		float heading = azimuth - bearing;
+		return heading;
+	}
+
+}

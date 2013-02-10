@@ -1,0 +1,4 @@
+INDEX VERSION 1.126+/Users/David/Documents/programacion/together/android/.metadata/.plugins/org.eclipse.jdt.core
+1474854290.index
+3788848915.index
+1044635294.index

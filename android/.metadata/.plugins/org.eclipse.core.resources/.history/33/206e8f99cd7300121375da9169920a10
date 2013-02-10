@@ -1,0 +1,105 @@
+package com.example.together;
+
+import java.util.List;
+
+import android.app.Activity;
+import android.content.Context;
+import android.hardware.GeomagneticField;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.location.Location;
+import android.location.LocationManager;
+import android.os.Bundle;
+import android.widget.Toast;
+
+public class CompassActivity extends Activity {
+
+	private static SensorManager mySensorManager;
+	private boolean sersorrunning;
+	private CompassView myCompassView;
+
+	/** Called when the activity is first created. */
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_compass);
+
+		myCompassView = (CompassView)findViewById(R.id.mycompassview);
+
+		mySensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+		List<Sensor> mySensors = mySensorManager.getSensorList(Sensor.TYPE_ORIENTATION);
+
+		if(mySensors.size() > 0){
+			mySensorManager.registerListener(mySensorEventListener, mySensors.get(0), SensorManager.SENSOR_DELAY_NORMAL);
+			sersorrunning = true;
+			Toast.makeText(this, "Start ORIENTATION Sensor", Toast.LENGTH_LONG).show();
+
+		}
+		else{
+			Toast.makeText(this, "No ORIENTATION Sensor", Toast.LENGTH_LONG).show();
+			sersorrunning = false;
+			finish();
+		}
+	}
+
+	private SensorEventListener mySensorEventListener = new SensorEventListener(){
+
+		@Override
+		public void onAccuracyChanged(Sensor sensor, int accuracy) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void onSensorChanged(SensorEvent event) {
+			// TODO Auto-generated method stub
+			myCompassView.updateDirection(getTarjet(event));
+			System.out.println(">>>>>>>>>sensor changed->" + event.values[0]);
+		}
+	};
+
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+
+		if(sersorrunning){
+			mySensorManager.unregisterListener(mySensorEventListener);
+		}
+	}
+
+	protected float getTarjet(SensorEvent event) {
+		float azimuth = event.values[0];// get azimuth from the orientation sensor (it's quite simple)
+		//41.381789, 2.141008
+		
+        
+//		Location currentLoc = null; // get location from GPS or network
+		//test
+		Location currentLoc = new Location(LocationManager.GPS_PROVIDER);
+        Double latOrg = 41.381789;
+        Double lonOrg = 2.141008;
+        currentLoc.setLatitude(latOrg);
+        currentLoc.setLongitude(lonOrg);
+        
+		// convert radians to degrees
+		azimuth = azimuth * 180 / (float) Math.PI;
+		GeomagneticField geoField = new GeomagneticField(
+		             Double.valueOf(currentLoc.getLatitude()).floatValue(),
+		             Double.valueOf(currentLoc.getLongitude()).floatValue(),
+		             Double.valueOf(currentLoc.getAltitude()).floatValue(),
+		             System.currentTimeMillis());
+		Location locTest = new Location(LocationManager.GPS_PROVIDER);
+        Double latitude = 41.379499;
+        Double longitude = 2.139930;
+        locTest.setLatitude(latitude);
+        locTest.setLongitude(longitude);
+		
+		azimuth += geoField.getDeclination(); // converts magnetic north into true north
+		float bearing = currentLoc.bearingTo(locTest); // (it's already in degrees)
+		float heading = azimuth - bearing;
+		return heading;
+	}
+
+}
