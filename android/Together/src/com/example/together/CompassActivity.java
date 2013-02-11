@@ -4,10 +4,6 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
-import android.graphics.drawable.BitmapDrawable;
 import android.hardware.GeomagneticField;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -16,11 +12,6 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
-import android.view.ViewGroup.LayoutParams;
-import android.widget.ImageView;
-import android.widget.ImageView.ScaleType;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 public class CompassActivity extends Activity {
@@ -28,7 +19,7 @@ public class CompassActivity extends Activity {
 	private static SensorManager mySensorManager;
 	private boolean sersorrunning;
 	private CompassView myCompassView;
-	private ImageView arrowView;
+//	private ImageView arrowView;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -114,6 +105,7 @@ public class CompassActivity extends Activity {
 //        }
 		@Override
 		public void onSensorChanged(SensorEvent event) {
+			//2 point to test.
 			Location locationObj = new Location(LocationManager.GPS_PROVIDER);
 	        Double latOrg = 41.381752;
 	        Double lonOrg = 2.14096;
@@ -130,7 +122,6 @@ public class CompassActivity extends Activity {
             if ( locationObj == null ) return;
 
             float azimuth = event.values[0];
-                            float baseAzimuth = azimuth;
 
             GeomagneticField geoField = new GeomagneticField( Double
                     .valueOf( locationObj.getLatitude() ).floatValue(), Double
@@ -149,33 +140,33 @@ public class CompassActivity extends Activity {
 
 	};
 	
-	private void rotateImageView( ImageView imageView, int drawable, float rotate ) {
-
-	    // Decode the drawable into a bitmap
-	    Bitmap bitmapOrg = BitmapFactory.decodeResource( getResources(),
-	            drawable );
-
-	    // Get the width/height of the drawable
-	    DisplayMetrics dm = new DisplayMetrics(); getWindowManager().getDefaultDisplay().getMetrics(dm);
-	    int width = bitmapOrg.getWidth(), height = bitmapOrg.getHeight();
-
-	    // Initialize a new Matrix
-	    Matrix matrix = new Matrix();
-
-	    // Decide on how much to rotate
-	    rotate = rotate % 360;
-
-	    // Actually rotate the image
-	    matrix.postRotate( rotate, width, height );
-
-	    // recreate the new Bitmap via a couple conditions
-	    Bitmap rotatedBitmap = Bitmap.createBitmap( bitmapOrg, 0, 0, width, height, matrix, true );
-	    //BitmapDrawable bmd = new BitmapDrawable( rotatedBitmap );
-
-	    //imageView.setImageBitmap( rotatedBitmap );
-	    imageView.setImageDrawable(new BitmapDrawable(getResources(), rotatedBitmap));
-	    imageView.setScaleType( ScaleType.CENTER );
-	}
+//	private void rotateImageView( ImageView imageView, int drawable, float rotate ) {
+//
+//	    // Decode the drawable into a bitmap
+//	    Bitmap bitmapOrg = BitmapFactory.decodeResource( getResources(),
+//	            drawable );
+//
+//	    // Get the width/height of the drawable
+//	    DisplayMetrics dm = new DisplayMetrics(); getWindowManager().getDefaultDisplay().getMetrics(dm);
+//	    int width = bitmapOrg.getWidth(), height = bitmapOrg.getHeight();
+//
+//	    // Initialize a new Matrix
+//	    Matrix matrix = new Matrix();
+//
+//	    // Decide on how much to rotate
+//	    rotate = rotate % 360;
+//
+//	    // Actually rotate the image
+//	    matrix.postRotate( rotate, width, height );
+//
+//	    // recreate the new Bitmap via a couple conditions
+//	    Bitmap rotatedBitmap = Bitmap.createBitmap( bitmapOrg, 0, 0, width, height, matrix, true );
+//	    //BitmapDrawable bmd = new BitmapDrawable( rotatedBitmap );
+//
+//	    //imageView.setImageBitmap( rotatedBitmap );
+//	    imageView.setImageDrawable(new BitmapDrawable(getResources(), rotatedBitmap));
+//	    imageView.setScaleType( ScaleType.CENTER );
+//	}
 
 	@Override
 	protected void onDestroy() {
@@ -185,38 +176,6 @@ public class CompassActivity extends Activity {
 		if(sersorrunning){
 			mySensorManager.unregisterListener(mySensorEventListener);
 		}
-	}
-
-	protected float getTarjet(SensorEvent event) {
-		float azimuth = event.values[0];// get azimuth from the orientation sensor (it's quite simple)
-		//41.381789, 2.141008
-		
-        //2 points in north direction: origen: 41.381752,2.14096  dest: 41.38323,2.140971  
-//		Location currentLoc = null; // get location from GPS or network
-		//test
-		Location currentLoc = new Location(LocationManager.GPS_PROVIDER);
-        Double latOrg = 41.381752;
-        Double lonOrg = 2.14096;
-        currentLoc.setLatitude(latOrg);
-        currentLoc.setLongitude(lonOrg);
-        
-		// convert radians to degrees
-		azimuth = azimuth * 180 / (float) Math.PI;
-		GeomagneticField geoField = new GeomagneticField(
-		             Double.valueOf(currentLoc.getLatitude()).floatValue(),
-		             Double.valueOf(currentLoc.getLongitude()).floatValue(),
-		             Double.valueOf(currentLoc.getAltitude()).floatValue(),
-		             System.currentTimeMillis());
-		Location locTest = new Location(LocationManager.GPS_PROVIDER);
-        Double latitude = 41.38323;
-        Double longitude = 2.140971;
-        locTest.setLatitude(latitude);
-        locTest.setLongitude(longitude);
-		
-		azimuth += geoField.getDeclination(); // converts magnetic north into true north
-		float bearing = currentLoc.bearingTo(locTest); // (it's already in degrees)
-		float heading = azimuth - bearing;
-		return heading;
-	}
+	}	
 
 }
