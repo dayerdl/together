@@ -15,7 +15,7 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 public class CompassActivity extends Activity {
-
+//master
 	private static SensorManager mySensorManager;
 	private boolean sersorrunning;
 	private CompassView myCompassView;
